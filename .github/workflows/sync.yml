@@ -1,0 +1,25 @@
+name: sync upstream
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # 每6小时；GitHub 最短约5分钟
+  workflow_dispatch:        # 想立刻同步就手动点一次
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add upstream https://github.com/Supprise0901/TVBox_live.git
+          git fetch --all --tags
+          git checkout master || git checkout -b master
+          git merge --ff-only upstream/master && git push origin master || \
+            echo "::warning::有冲突或不能快进，本次跳过"
